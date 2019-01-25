@@ -1,0 +1,372 @@
+/**
+* Copyright 2016 IBM Corp.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+package com.ibm.test1;
+
+import com.ibm.mfp.adapter.api.ConfigurationAPI;
+import com.ibm.mfp.adapter.api.OAuthSecurity;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
+
+
+//import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechRecognitionAlternative;
+//import com.ibm.watson.developer_cloud.speech_to_text.v1.model.Transcript;
+//import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechResults;
+
+import com.ibm.watson.developer_cloud.http.HttpMediaType;
+import com.ibm.watson.developer_cloud.http.RequestBuilder;
+//import com.ibm.watson.developer_cloud.service.ServiceResponseException;
+//import com.ibm.watson.developer_cloud.service.BadRequestException;
+import com.ibm.watson.developer_cloud.http.*;
+import com.ibm.watson.developer_cloud.speech_to_text.*;
+
+
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import javax.net.ssl.HttpsURLConnection;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+//import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+/*
+import com.ibm.json.java.JSONArray;
+import com.ibm.json.java.JSONObject;
+//import com.ibm.json.java.JSONReader;
+//import org.json.*;
+/*
+import org.json.java.JSONArray;
+import org.json.java.JSONObject;
+import org.json.java.JsonReader;
+
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JsonReader;
+*/
+import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonObjectBuilder;
+
+import org.apache.commons.codec.binary.Base64;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.commons.io.IOUtils;
+
+//import org.glassfish.jersey.media.*;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+//http://www.javatpoint.com/jax-rs-file-upload-example
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.UriInfo;
+
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.container.*;
+
+import javax.servlet.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.logging.Logger;
+import java.util.Arrays;
+import java.net.URL;
+import java.io.FileOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.ibm.watson.developer_cloud.text_to_speech.v1.TextToSpeech;
+import com.ibm.watson.developer_cloud.text_to_speech.v1.model.Voice;
+
+import com.ibm.watson.developer_cloud.discovery.v1.Discovery;
+import com.ibm.watson.developer_cloud.service.security.IamOptions;
+
+import com.ibm.watson.developer_cloud.speech_to_text.v1.model.RecognizeOptions;
+//import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechResults;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechRecognitionResult;
+import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechRecognitionResults;
+
+@Path("/")
+public class WatsonJavaResource {
+
+    static Logger logger = Logger.getLogger(WatsonJavaResource.class.getName());
+
+    // Override SSL Trust manager without certificate chains validation
+    TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){
+            public X509Certificate[] getAcceptedIssuers(){return null;}
+            public void checkClientTrusted(X509Certificate[] certs, String authType){}
+            public void checkServerTrusted(X509Certificate[] certs, String authType){}
+    }};
+
+    @Context
+    ConfigurationAPI configApi;
+
+    // These different methods can be used to transcode the audio file into
+    // a different media format if you needed to do that for some reason
+    // You could also set up an endpoint for batch audio processing or other things
+
+    // Leaving off @Consumes should catch everything, also it wont matter for mfp adapters,
+    // because the client is always encoded as application/x-www-form-urlencoded
+  @Logged
+  @POST
+  @Consumes("audio/wav")
+  @Path("/upload")
+  @OAuthSecurity(enabled = false)
+  public Response uploadFile2(byte [] body){
+    System.out.println("--- Hit 'audio/wav' consumer! ");
+    //callWatson(body);
+    return Response.status(200).build();
+
+  }
+
+  // This is the endpoint we will hit with our client
+  // We need to send the data as a base64 encoded string in a FormParameters
+  // then write that string to a byte array[], then a file that we can send to Watson.
+  @Logged
+  @POST
+  @OAuthSecurity(enabled = false)
+  @Path("/uploadBase64Wav")
+  public Response handleUpload(@FormParam("audioFile") String base64wav, @QueryParam("keywords") String keywords, @Context HttpHeaders headers) throws Exception {
+
+      // Convert the base64 string back into a wav file
+      // http://stackoverflow.com/questions/23979842/convert-base64-string-to-image
+      String base64 = base64wav.split(",")[1]; // remove the "data:audio/x-wav;base64" header
+      byte[] wavBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(base64);
+      System.out.println("bytes:" + wavBytes);
+      System.out.println("Keywords:" + keywords);
+      return callWatson(wavBytes, keywords);
+  }
+
+
+    // Receive audio file byte[], write a temp file that we send to Watson
+    // Return an HTTP response with the transcript
+    private Response callWatson(byte [] body, String keywords){
+
+//        TokenOptions tokenOptions = new TokenOptions()
+//        {
+//            ServiceUrl = "https://gateway-syd.watsonplatform.net/speech-to-text/api",
+//            IamApiKey = "<iMYnxPGFXo6BcaLjFzONmAE68Zbjh7C9E4WYhHhwqhJ9>"
+//        };
+
+
+      IamOptions options = new IamOptions.Builder()
+       .apiKey("iMYnxPGFXo6BcaLjFzONmAE68Zbjh7C9E4WYhHhwqhJ9")
+       .build();
+//
+////        System.out.println("In CallWatson:");
+////        IamOptions.Builder optionsBuilder = new IamOptions.Builder()
+////                .apiKey("iMYnxPGFXo6BcaLjFzONmAE68Zbjh7C9E4WYhHhwqhJ9");
+//
+//        SpeechToText service = new SpeechToText();
+//
+//      SpeechToText service = new SpeechToText(options);
+//        System.out.println("new SpeechToText created:");
+//
+//        service.setApiKey("iMYnxPGFXo6BcaLjFzONmAE68Zbjh7C9E4WYhHhwqhJ9");
+//        System.out.println("In CallWatson:service.setApiKey");
+//      //service.setIamCredentials(optionsBuilder.build());
+//      service.setEndPoint("https://gateway-syd.watsonplatform.net/speech-to-text/api");
+//        System.out.println("In CallWatson:service.setEndPoint");
+
+      // Get our username/password for Watson from the Adapter configuration api
+      // See the MobileFirst docs. Be sure to set these values in your mfp dashboard
+
+      //service.setUsernameAndPassword(configApi.getPropertyValue("Username"), configApi.getPropertyValue("Password"));
+      //service.setEndPoint("https://stream.watsonplatform.net/speech-to-text/api");
+
+        SpeechToText service;
+
+//        IamOptions options = new IamOptions.Builder()
+//         .apiKey("iMYnxPGFXo6BcaLjFzONmAE68Zbjh7C9E4WYhHhwqhJ9")
+//                .build();
+
+        try {
+            //service = new SpeechToText();
+            service = new SpeechToText(options);
+
+            //service.setUsernameAndPassword( "<username>", "<password>" );
+            service.setApiKey("iMYnxPGFXo6BcaLjFzONmAE68Zbjh7C9E4WYhHhwqhJ9");
+            //service.setSkipAuthentication(true);
+            service.setEndPoint("https://gateway-syd.watsonplatform.net/speech-to-text/api");
+
+    } catch (Exception e) {
+        logger.warning("cannot create Service");
+        e.printStackTrace();
+        return Response.status(400).entity("cannot create Service").build();
+    }
+
+
+      String[] arr = keywords.split(",");
+      logger.warning("Keyword array:" + arr.toString());
+      // having a lot of trouble with Keywords and sessionless recognize() method
+      // for now, we won't be using keywords
+         // Save the audio byte[] to a wav file
+        String result = "";
+        File soundFile = null;
+        try {
+            // this isn't quite working, seems like we can send a blank file
+            logger.warning("Have speech file, creating temp file to send to Watson");
+            logger.warning("Using these keywords:" + keywords);
+            soundFile = File.createTempFile("voice", ".wav");
+            FileUtils.writeByteArrayToFile(soundFile, body);
+        } catch (IOException e) {
+            logger.warning("No audio file received");
+            e.printStackTrace();
+            return Response.status(400).entity("No audio file received").build();
+        }
+
+
+        try {
+            // this isn't quite working, seems like we can send a blank file
+            logger.warning("trying to open temp audio file");
+            File audio = new File("audio1.wav");
+
+            RecognizeOptions recOptions = new RecognizeOptions.Builder()
+                    .contentType(HttpMediaType.AUDIO_WAV) //select your format
+                    .build();
+
+            //SpeechResults tempResult = service.recognize(audio, options).execute();
+
+
+//            RecognizeOptions options2 = new RecognizeOptions.Builder()
+//                    .audio(audio)
+//                    .contentType(RecognizeOptions.ContentType.AUDIO_WAV)
+//                    .build();
+//            SpeechRecognitionResults transcript = service.recognize(options2).execute();
+
+            //System.out.println(tempResult);
+        } catch (Exception e) {
+            logger.warning("cannot open temp audio");
+            e.printStackTrace();
+            //return Response.status(400).entity("cannot open temp audio").build();
+        }
+
+
+        // Transcribe the wav file using Watson's recognize() API
+        try {
+
+          if( soundFile.exists()){
+            logger.warning("Sound file exists!");
+//              RecognizeOptions options1 = new RecognizeOptions.Builder()
+//                      .audio(soundFile)
+//                      .contentType(RecognizeOptions.ContentType.AUDIO_WAV)
+//                      .build();
+//              SpeechRecognitionResults transcript = service.recognize(options1).execute();
+
+//              RecognizeOptions recOptions = new RecognizeOptions.Builder()
+//                      .contentType(HttpMediaType.AUDIO_WAV) //select your format
+//                      .build();
+              RecognizeOptions recOptions = new RecognizeOptions.Builder()
+                      .audio(soundFile)
+                      .contentType(HttpMediaType.AUDIO_WAV)
+                      .build();
+
+              SpeechRecognitionResults transcript = service.recognize(recOptions).execute();
+              System.out.println(transcript);
+              //SpeechResults textResult = service.recognize(soundFile, recOptions).execute();
+
+              System.out.println(transcript.toString());
+
+              String text = null;
+              if( !transcript.getResults().isEmpty() ) {
+                  List<SpeechRecognitionResult> transcripts = transcript.getResults();
+
+                  for (int i = 0; i < transcripts.size(); i++) {
+                      SpeechRecognitionResult recResult = transcripts.get(i);
+                      if(recResult.isFinalResults()){
+                          text = recResult.getAlternatives().get(0).getTranscript();
+                          break;
+                      }
+                  }
+              }
+
+//              String text = null;
+//              if( !textResult.getResults().isEmpty() ) {
+//                  List<Transcript> transcripts = textResult.getResults();
+//
+//                  for(Transcript transcript: transcripts){
+//                      if(transcript.isFinal()){
+//                          text = transcript.getAlternatives().get(0).getTranscript();
+//                          break;
+//                      }
+//                  }
+//              }
+              //return text;
+              logger.warning("transcript from service!" + text);
+              return Response.ok().entity(text).build();
+
+          }else{
+            logger.warning("----- SOUND FILE NOT FOUND, bluemix can't save file");
+            return Response.status(400).entity("Sound file could not be saved to server").build();
+          }
+
+
+
+//        } catch (com.ibm.watson.developer_cloud.service.BadRequestException bre){
+//          logger.warning("com.ibm.watson.developer_cloud.service.BadRequestException");
+//          logger.warning(bre.getStatusCode() + bre.getMessage() + " \n");
+//          return Response.status(400).entity(bre.getMessage()).build();
+
+        } catch (Exception e){
+
+          logger.warning("No transcript from service! Some warning!" + e.getMessage());
+          e.printStackTrace();
+          logger.warning("----- good luck ----");
+          //logger.warning(e.getResponse().toString() + "\n");
+          return Response.status(400).entity(e.getMessage()).build();
+        }
+    }
+}

@@ -1,0 +1,67 @@
+<ion-header>
+  <!-- <ion-navbar hideBackButton="true">
+    <ion-title>
+      Home
+    </ion-title>
+    <ion-buttons left>
+        <button ion-button icon-only menuToggle>
+          <ion-icon name='menu'></ion-icon>
+        </button>
+      </ion-buttons>
+  </ion-navbar> -->
+  <ion-navbar>
+        <ion-title>
+          Audio Transcription
+        </ion-title>
+      </ion-navbar>
+</ion-header>
+<ion-content padding id="home">
+        <div id="main">
+                <div id="main_title">{{title}}</div>
+                <div id="main_status">{{status}}</div>
+              </div>
+                <div id="button_content">
+                    <button id="start_button" ion-button icon-left outline (click)="startRecord()">Start Recording</button>
+                    <button id="stop_button" ion-button icon-left outline (click)="stopRecord()">Stop Recording</button>
+                    <button id="transcribe_button" ion-button icon-left outline (click)="uploadToAdapter()">Transcribe Audio</button>
+                </div>
+    <!-- <ion-refresher (ionRefresh)="doRefresh($event)">
+        <ion-refresher-content
+        pullingIcon="md-arrow-dropdown"
+        pullingText="Pull to refresh"
+        refreshingSpinner="crescent"
+        refreshingText="Refreshing...">
+      </ion-refresher-content>
+      </ion-refresher>
+   
+  <ion-list class="outer-content">
+    <ion-list-header>
+        Open Tasks
+     </ion-list-header>
+      <ion-item *ngFor="let activity of activityList">
+          <ion-thumbnail item-start>
+              <img [attr.src]="activity.imagePath">
+          </ion-thumbnail>
+          <h2>{{activity.title}}</h2>
+          <p>{{activity.description}}</p>
+          <button ion-button clear (click)="removeItem(activity)" item-end>Done</button>
+      </ion-item>
+    </ion-list>
+
+    <ion-list class="outer-content">
+        <ion-list-header>
+            Completed Tasks
+         </ion-list-header>
+          <ion-item *ngFor="let activity of completedList">
+              <ion-thumbnail item-start>
+                  <img [attr.src]="activity.imagePath">
+              </ion-thumbnail>
+              <h2>{{activity.title}}</h2>
+              <p>{{activity.description}}</p>
+          </ion-item>
+        </ion-list>
+  
+  <div *ngIf="activityList.length == 0" style="height: 100%;position: relative;top: 45%;text-align: center;">
+      <div style="font-size: 20px;text-align: center;color: #90949c;">Pull to fetch tasks</div>
+  </div> -->
+</ion-content>
